@@ -17,9 +17,10 @@ jobs:
 
       - name: Fetch latest planets
         run: |
-          curl -L https://api.helldivers2.dev/raw/api-planets \
+          curl -L \
             -H "X-Super-Client: BootsOfTango-App" \
             -H "X-Super-Contact: chriskim01@gmail.com" \
+            https://api.helldivers2.dev/raw/api-planets \
             -o planets.json
 
       - name: Commit if changed
