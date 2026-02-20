@@ -8,17 +8,27 @@ on:
 jobs:
   update:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
     steps:
       - uses: actions/checkout@v3
 
-      - name: Create planets file
-        run: |
-          echo '{ "planets": ["placeholder"] }' > planets.json
+      - name: Install jq
+        run: sudo apt-get install jq -y
 
-      - name: Commit
+      - name: Fetch HD2 Planet API
+        run: |
+          curl -L https://helldivers.io/api/planets > raw.json
+
+      - name: Convert to clean JSON
+        run: |
+          jq '{ planets: [ .[] | .name ] }' raw.json > planets.json
+
+      - name: Commit changes
         run: |
           git config --global user.name "bot"
           git config --global user.email "bot@example.com"
           git add planets.json
-          git commit -m "update" || exit 0
+          git commit -m "Auto update planets" || exit 0
           git push
