@@ -1,0 +1,24 @@
+name: Update Planets
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Create planets file
+        run: |
+          echo '{ "planets": ["placeholder"] }' > planets.json
+
+      - name: Commit
+        run: |
+          git config --global user.name "bot"
+          git config --global user.email "bot@example.com"
+          git add planets.json
+          git commit -m "update" || exit 0
+          git push
