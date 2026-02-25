@@ -5176,7 +5176,7 @@ function normalizeText(s) { return String(s || "").toLowerCase().trim(); }
 
         let LOCAL_PLANET_BIOME_MAP = Object.create(null);
         // refresh currently rolled planet
-        if (state?.spin?.planet) { renderSpin(state.spin); }
+        if (state?.current?.planet) { renderSpin(); }
 
         function parseLocalPlanetBiomeTxt(text) {
             const map = Object.create(null);
@@ -5216,9 +5216,9 @@ function normalizeText(s) { return String(s || "").toLowerCase().trim(); }
 
                 const help = document.querySelector("#biomeHelpRow");
                 if (help) help.style.display = "none";
-                if (state?.spin?.planet) { renderSpin(state.spin); }
+                if (state?.current?.planet) { renderSpin(); }
                 // refresh currently rolled planet
-                if (state?.spin?.planet) { renderSpin(state.spin); }
+                if (state?.current?.planet) { renderSpin(); }
                 console.log("[BiomeMap] Local TXT auto-loaded:", Object.keys(LOCAL_PLANET_BIOME_MAP).length);
                 const helpRow = document.getElementById("biomeHelpRow");
                 if (helpRow) helpRow.style.display = "none";
@@ -5246,7 +5246,7 @@ function normalizeText(s) { return String(s || "").toLowerCase().trim(); }
                 try {
                     LOCAL_PLANET_BIOME_MAP = parseLocalPlanetBiomeTxt(String(reader.result || ""));
                     // refresh currently rolled planet
-                    if (state?.spin?.planet) { renderSpin(state.spin); }
+                    if (state?.current?.planet) { renderSpin(); }
                     console.log("[BiomeMap] Local TXT loaded (manual):", Object.keys(LOCAL_PLANET_BIOME_MAP).length);
                     const helpRow = document.getElementById("biomeHelpRow");
                     if (helpRow) helpRow.style.display = "none";
