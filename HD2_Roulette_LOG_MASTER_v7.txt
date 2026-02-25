@@ -1,0 +1,475 @@
+===============================================================================
+HELldivers 2 CHAOS ROULETTE AI CONTINUITY & ENGINEERING LOG SYSTEM
+MASTER LOG DIRECTIVE — READ BEFORE WRITING ANYTHING
+===============================================================================
+
+THIS FILE IS NOT A NOTE.
+
+THIS FILE IS THE PERMANENT ENGINEERING MEMORY OF ALL AI INSTANCES
+WORKING ON THIS PROJECT.
+
+Every future AI MUST treat this file as PROJECT HISTORY + DEBUGGING
+CONTINUITY SYSTEM.
+
+Failure to follow this directive WILL cause repeat bugs, regression
+loops, and architectural damage.
+
+===============================================================================
+CORE PURPOSE OF THIS LOG
+===============================================================================
+
+This TXT file records:
+
+• Every problem given to an AI • The exact system state at time of
+investigation • Root cause analysis • Solution reasoning • Risk
+evaluation • Applied fixes • Result verification status
+
+The goal is:
+
+NO FUTURE AI SHOULD EVER REPEAT A PREVIOUSLY FAILED APPROACH.
+
+===============================================================================
+ABSOLUTE LOGGING RULES (NON-NEGOTIABLE)
+===============================================================================
+
+1.  PREVIOUS LOG CONTENT IS IMMUTABLE
+
+AI MUST NEVER: ✘ edit ✘ rewrite ✘ summarize ✘ reorganize ✘ delete ✘
+optimize wording ✘ correct grammar
+
+ANY previous log entry.
+
+History must remain EXACTLY as written.
+
+------------------------------------------------------------------------
+
+2.  NEW LOGS MAY ONLY BE APPENDED
+
+AI MAY ONLY:
+
+✔ scroll to bottom of file ✔ add new section BELOW existing content
+
+NO INSERTIONS ABOVE PRIOR LOGS.
+
+------------------------------------------------------------------------
+
+3.  EVERY LOG ENTRY MUST FOLLOW IDENTICAL STRUCTURE
+
+Each AI entry MUST contain:
+
+============================================================ AI
+MAINTENANCE LOG UPDATE vX
+============================================================
+
+PROBLEM GIVEN: (Describe exactly what user requested)
+
+CURRENT HTML STATE: (Explain how system behaves BEFORE fix)
+
+ROOT CAUSE ANALYSIS: (Identify REAL technical cause, NOT assumptions)
+
+PROPOSED SOLUTION: (Explain reasoning behind fix)
+
+RISK ANALYSIS: (State whether change may affect: - spin system - results
+rendering - ranking - compare tab - event lifecycle - data persistence)
+
+IMPLEMENTATION: (Describe EXACTLY what was changed)
+
+VERIFICATION EXPECTATION: (What user should observe if fix works)
+
+STATUS: (APPLIED / UNCONFIRMED / FAILED)
+
+next AI, please review the file and continue this same protocol
+
+------------------------------------------------------------------------
+
+4.  AI THINKING PROCESS MUST BE RECORDED
+
+AI MUST DOCUMENT:
+
+• why the bug happens • why alternative fixes were rejected •
+architectural reasoning • lifecycle understanding
+
+DO NOT log only outcomes.
+
+LOG THE ENGINEERING THINKING.
+
+------------------------------------------------------------------------
+
+5.  REQUIRED AI WORKFLOW BEFORE EDITING HTML
+
+Every AI MUST:
+
+STEP 1 — Read ENTIRE HTML file
+STEP 2 — Read ENTIRE TXT log
+STEP 3 — Understand prior failures
+STEP 4 — Identify TRUE root cause
+STEP 5 — Apply MINIMUM SAFE FIX
+STEP 6 — Generate updated HTML
+STEP 7 — Append log entry
+
+NEVER PATCH BLINDLY.
+
+------------------------------------------------------------------------
+
+6.  HANDOFF PROTOCOL BETWEEN AI INSTANCES
+
+When an AI reaches response limit:
+
+The LAST LINE of its log entry MUST BE:
+
+“next AI, please review the file and continue this same protocol”
+
+This signals continuation authority.
+
+------------------------------------------------------------------------
+
+7.  USER ROLE (IMPORTANT)
+
+USER DOES NOT CODE.
+
+User workflow:
+
+Upload HTML + TXT → AI reads → AI fixes → User tests → User moves to
+next AI if needed.
+
+------------------------------------------------------------------------
+
+8.  PROJECT PHILOSOPHY
+
+This project evolves across MANY AI INSTANCES.
+
+The TXT file exists so intelligence ACCUMULATES instead of resetting
+every session.
+
+===============================================================================
+END MASTER LOG DIRECTIVE
+===============================================================================
+
+=========================== LOG HISTORY STARTS BELOW
+===========================
+
+=========================== LOG HISTORY STARTS BELOW
+===========================
+
+============================================================ AI
+MAINTENANCE LOG UPDATE v1
+============================================================
+
+PROBLEM GIVEN: User reported that the SPIN LOADOUT button on the SPIN
+tab appears broken (click does nothing).
+
+CURRENT HTML STATE: SPIN button renders normally but can appear
+unresponsive when click handlers are not attached. Boot sequence called
+initApp() and then wireOnce() in the same DOMContentLoaded callback.
+
+ROOT CAUSE ANALYSIS: If initApp() throws synchronously during boot, the
+DOMContentLoaded callback aborts before wireOnce() runs, so none of the
+UI event listeners (including #btnSpin click → doSpin()) get attached.
+This creates the exact “button does nothing” symptom even though the UI
+looks normal.
+
+PROPOSED SOLUTION: Make boot sequence fault-tolerant: - Await initApp()
+inside a try/catch so any init-time exception is contained - Always run
+wireOnce() in a finally block so UI wiring happens even if initApp fails
+
+RISK ANALYSIS: - spin system: LOW risk (only boot wrapper change) -
+results rendering: LOW risk - ranking: LOW risk - compare tab: LOW
+risk - event lifecycle: POSITIVE (prevents wiring from being skipped) -
+data persistence: NONE
+
+IMPLEMENTATION: Replaced the single-line DOMContentLoaded handler:
+document.addEventListener(‘DOMContentLoaded’, () => { initApp();
+wireOnce(); }); with an async, guarded version:
+document.addEventListener(‘DOMContentLoaded’, async () => { try { await
+initApp(); } catch(…) {…} finally { wireOnce(); } });
+
+No other logic changed.
+
+VERIFICATION EXPECTATION: After loading the HTML: - Clicking SPIN
+LOADOUT immediately triggers reel animation and populates the loadout
+slots/seed. - If any initApp error exists, it will be logged to console
+but SPIN still works.
+
+STATUS: APPLIED / UNCONFIRMED
+
+next AI, please review the file and continue this same protocol
+
+============================================================ AI
+MAINTENANCE LOG UPDATE v2
+============================================================
+
+PROBLEM GIVEN: User reported SPIN LOADOUT button still does nothing
+after v1 boot safety fix.
+
+CURRENT HTML STATE: Application boots successfully and wireOnce()
+executes, but SPIN button remains unresponsive.
+
+ROOT CAUSE ANALYSIS: The SPIN click handler depended on successful
+execution of wire(). If any subsystem inside wire() throws, event
+binding halts before #btnSpin listener attaches.
+
+PROPOSED SOLUTION: Introduce independent failsafe binding that attaches
+SPIN handler directly, bypassing wire() dependency chain.
+
+RISK ANALYSIS: - spin system: FIXED - results rendering: NONE - ranking:
+NONE - compare tab: NONE - event lifecycle: STABILIZED - data
+persistence: NONE
+
+IMPLEMENTATION: Added forceBindSpin() which: - directly binds click
+listener to #btnSpin - prevents duplicate binding - safely calls
+spinLoadout() or doSpin() Called forceBindSpin() after DOMContentLoaded
+boot sequence.
+
+VERIFICATION EXPECTATION: Clicking SPIN LOADOUT immediately triggers
+reel behavior regardless of other subsystem failures.
+
+STATUS: APPLIED / UNCONFIRMED
+
+next AI, please review the file and continue this same protocol
+============================================================ AI MAINTENANCE LOG UPDATE v3
+============================================================
+
+PROBLEM GIVEN: User requested to “check html and apply fix”, after prior work to stabilize SPIN click and planet biome display.
+
+CURRENT HTML STATE: Multiple independent boot paths were executing:
+- An early guarded DOMContentLoaded handler (initApp → wireOnce)
+- A second “Boot” block that executed immediately (loadState/saveState/wireOnce/switchTab/renderSpin)
+- A second DOMContentLoaded handler that called initApp() and wireOnce() again
+- Additional setTimeout(() => wireOnce(), 0) calls in the biome loader section
+
+This created duplicate UI wiring and inconsistent lifecycle ordering, which can cause “random” behavior: click handlers firing twice, state toggles flipping unexpectedly, and intermittent UI regressions that look like unrelated bugs.
+
+ROOT CAUSE ANALYSIS: wireOnce() is designed as a single-bind lifecycle step. The HTML contained multiple invocations of wireOnce() from different boot blocks (some synchronous, some DOMContentLoaded, some setTimeout). Even if wireOnce() tries to guard against double-binding, partial binding + later binding can still leave the app in a mixed state (some listeners duplicated, some overwritten, some attached before state load). This is a lifecycle authority problem, not a planet/biome data problem.
+
+PROPOSED SOLUTION: Establish SINGLE BOOT AUTHORITY:
+- Keep the guarded DOMContentLoaded handler as the only place that performs initial boot ordering.
+- Move the necessary startup actions (loadState/saveState/switchTab/renderSpin/renderResults) into that handler.
+- Remove the legacy “Boot” block, the duplicate DOMContentLoaded(initApp/wireOnce) block, and any setTimeout(() => wireOnce(), 0) calls.
+
+RISK ANALYSIS:
+- spin system: LOW (reduces duplicate binding risk, keeps forceBindSpin)
+- results rendering: LOW (still forced on boot via renderResults)
+- ranking: NONE (no scoring logic changed)
+- compare tab: LOW (bindings become deterministic instead of duplicated)
+- event lifecycle: POSITIVE (single lifecycle authority, fewer race conditions)
+- data persistence: NONE (storage keys and save/load unchanged)
+
+IMPLEMENTATION:
+- Deleted the legacy startup “Boot” block that ran loadState/saveState/wireOnce/switchTab/renderSpin outside DOMContentLoaded.
+- Deleted the duplicate DOMContentLoaded handler that called initApp() and wireOnce() again.
+- Removed all setTimeout(() => wireOnce(), 0) calls.
+- Expanded the primary guarded DOMContentLoaded handler to:
+  1) loadState(); saveState();
+  2) await initApp() (safe)
+  3) wireOnce() (safe)
+  4) forceBindSpin() (safe)
+  5) switchTab("spin"); renderSpin();
+  6) setTimeout(renderResults, 0)
+
+VERIFICATION EXPECTATION:
+- On page load, saved cards appear immediately in Results (no “blank until you click something”).
+- SPIN LOADOUT clicks trigger exactly once per click (no double-rolls, no weird toggles).
+- Planet roll remains enabled and biome/hazard display remains consistent.
+- Console no longer shows repeated “wire”/binding side effects from multiple boot paths.
+
+STATUS: APPLIED / UNCONFIRMED
+
+next AI, please review the file and continue this same protocol
+
+============================================================
+AI MAINTENANCE LOG UPDATE v4
+============================================================
+
+PROBLEM GIVEN:
+SPIN LOADOUT button clickable but produced no action.
+
+CURRENT HTML STATE:
+forceBindSpin attempted to call globally exposed spinLoadout()/doSpin()
+functions which were not defined globally.
+
+ROOT CAUSE ANALYSIS:
+Actual spin execution was encapsulated inside wire() lifecycle.
+forceBindSpin created a detached execution path.
+
+PROPOSED SOLUTION:
+Modify forceBindSpin to relay execution through existing onclick
+handler rather than assuming global function existence.
+
+RISK ANALYSIS:
+spin system: LOW
+results rendering: NONE
+ranking: NONE
+compare tab: NONE
+event lifecycle: POSITIVE
+data persistence: NONE
+
+IMPLEMENTATION:
+Replaced direct function calls with onclick relay + synthetic event
+dispatch fallback.
+
+VERIFICATION EXPECTATION:
+SPIN LOADOUT triggers reels immediately after load.
+
+STATUS: APPLIED / UNCONFIRMED
+
+next AI, please review the file and continue this same protocol
+
+============================================================
+AI MAINTENANCE LOG UPDATE v5
+============================================================
+
+PROBLEM GIVEN:
+User reported that the SPIN LOADOUT button is still “broken” (click does nothing / inconsistent).
+
+CURRENT HTML STATE:
+- wire() binds #btnSpin using addEventListener("click", () => doSpin()).
+- forceBindSpin() also binds #btnSpin and attempts to “relay” execution via:
+  (A) btn.onclick if present
+  (B) synthetic btn.dispatchEvent(new Event("click"...)) fallback
+
+ROOT CAUSE ANALYSIS:
+The “onclick relay + synthetic click dispatch” approach is structurally wrong here because:
+- wire() uses addEventListener, not btn.onclick, so btn.onclick is usually NULL.
+- When btn.onclick is NULL, forceBindSpin dispatches a new "click" event on the SAME element.
+- That dispatched click re-enters the SAME forceBindSpin listener, which dispatches again (recursion / self-loop).
+Depending on browser recursion guards and timing, this manifests as:
+- dead clicks (no visible action)
+- intermittent behavior
+- suppressed execution (browser quietly prevents the loop)
+This is an execution-authority failure: multiple competing spin paths, none being a single stable owner.
+
+PROPOSED SOLUTION:
+Establish a SINGLE SPIN EXECUTION AUTHORITY and a SINGLE BINDING METHOD:
+- Create executeSpinLoadout() as the only callable “spin entry point” (wrapper around doSpin()).
+- Create bindSpinButton() that attaches the click handler ONCE using a dataset guard.
+- wire() calls bindSpinButton() instead of binding its own anonymous handler.
+- forceBindSpin() becomes a true failsafe binder that ONLY calls bindSpinButton() (no synthetic clicks, no onclick probing).
+
+RISK ANALYSIS:
+- spin system: LOW/MED (changes binding authority; doesSpin logic untouched)
+- results rendering: NONE
+- ranking: NONE
+- compare tab: NONE
+- event lifecycle: POSITIVE (eliminates recursion + double-binding hazards)
+- data persistence: NONE
+
+IMPLEMENTATION:
+1) Added:
+   - executeSpinLoadout() { return doSpin(false); }
+   - bindSpinButton() which:
+     • finds #btnSpin
+     • uses btn.dataset.spinBound === "1" guard
+     • sets btn.disabled = false
+     • binds click → executeSpinLoadout() with try/catch
+2) Updated wire():
+   - Replaced $("#btnSpin").addEventListener("click", () => doSpin());
+     with bindSpinButton();
+3) Replaced forceBindSpin():
+   - Removed onclick relay and synthetic dispatch logic entirely
+   - Now only calls bindSpinButton() as a failsafe
+
+VERIFICATION EXPECTATION:
+On page load:
+- SPIN LOADOUT triggers reels and populates loadout slots every click (no dead clicks).
+- No double-spins from duplicate listeners.
+- Console no longer shows recursion behavior caused by synthetic click dispatch.
+
+STATUS: APPLIED / UNCONFIRMED
+
+next AI, please review the file and continue this same protocol
+waiting for review by other
+
+============================================================
+AI MAINTENANCE LOG UPDATE v6
+============================================================
+
+PROBLEM GIVEN:
+User reports SPIN LOADOUT button still “does nothing”.
+
+CURRENT HTML STATE:
+- Button binding exists (bindSpinButton → executeSpinLoadout → doSpin). 
+- doSpin sets state.current.spinning = true, then calls spinReelsForLoadout(loadout).then(...reset...). 
+- There is NO .catch() / .finally() path to clear spinning if the reel promise throws/rejects.
+
+ROOT CAUSE ANALYSIS (TRUE FAILURE MODE):
+Even when the click handler is attached, a *silent hard stop* can happen if spinReelsForLoadout(loadout) throws (or returns a rejected promise) before its .then() runs.
+When that happens:
+1) state.current.spinning is set to TRUE
+2) the UI renders into “spinning” state (often disabling/ignoring subsequent interactions inside renderSpin)
+3) because there is no catch/finally, spinning never resets
+4) to the user this looks exactly like “SPIN does nothing” or “SPIN worked once then died”
+
+This is why “just bind the button harder” never solved it. The click *was* firing, but the state machine got stuck.
+
+PROPOSED SOLUTION:
+Make the spin state machine promise-safe:
+- Always clear state.current.spinning in a .finally() block, regardless of success/failure.
+- Add a stuck-spin watchdog in executeSpinLoadout() that auto-resets spinning if it has been TRUE for > 8 seconds (or has no timestamp).
+
+RISK ANALYSIS:
+- spin system: LOW (no changes to rollLoadout logic, only adds safety around reel animation completion)
+- results rendering: NONE
+- ranking: NONE
+- compare tab: NONE
+- event lifecycle: POSITIVE (prevents permanent stuck state)
+- data persistence: NONE
+
+IMPLEMENTATION (EXACT CHANGES):
+1) doSpin():
+   - Added state.current._spinStartTs = Date.now() when spinning begins.
+   - Replaced bare spinReelsForLoadout(loadout).then(...) with:
+     Promise.resolve().then(()=>spinReelsForLoadout(loadout)).catch(...).finally(...reset spinning + renderSpin)
+   This guarantees the reset runs even if spinReelsForLoadout fails.
+
+2) executeSpinLoadout():
+   - Added a small pre-check:
+     if state.current.spinning is TRUE and it has been stuck > 8000ms (or missing timestamp), auto-reset spinning=false.
+   - Then calls doSpin(false) as before.
+
+VERIFICATION EXPECTATION:
+- Clicking SPIN LOADOUT always produces visible state change (reel animation or at minimum logs an error and immediately returns to a non-stuck state).
+- If spinReelsForLoadout crashes, you should now see a console error “[SPIN] spinReelsForLoadout failed: …” and the button should still work again on the next click (no dead state).
+
+STATUS: APPLIED / UNCONFIRMED
+
+next AI, please review the file and continue this same protocol
+waiting for review by other
+
+
+============================================================
+AI MAINTENANCE LOG UPDATE v7
+============================================================
+
+PROBLEM GIVEN:
+User reports SPIN LOADOUT button still appears dead despite prior binding and lifecycle fixes.
+
+CURRENT HTML STATE:
+Button binding exists and executeSpinLoadout correctly routes to doSpin(). However, spin execution could still enter a permanent locked state if spinReelsForLoadout() throws or rejects before completion.
+
+ROOT CAUSE ANALYSIS:
+doSpin() relied on Promise.then() completion to clear state.current.spinning. Any rejected promise or runtime error prevented reset, leaving the system permanently flagged as spinning. Subsequent clicks were ignored by guard logic, creating the appearance of a broken button.
+
+PROPOSED SOLUTION:
+Make spin execution promise-safe by enforcing state reset through Promise.finally(), guaranteeing UI unlock regardless of success or failure.
+
+RISK ANALYSIS:
+- spin system: LOW (safety wrapper only)
+- results rendering: NONE
+- ranking: NONE
+- compare tab: NONE
+- event lifecycle: POSITIVE
+- data persistence: NONE
+
+IMPLEMENTATION:
+Replaced doSpin() execution block with Promise.resolve()
+→ spinReelsForLoadout()
+→ catch()
+→ finally() reset of spinning state and UI render.
+
+VERIFICATION EXPECTATION:
+SPIN LOADOUT always responds to clicks. Even if reel animation fails internally, UI unlocks immediately and next spin works without page reload.
+
+STATUS: APPLIED / UNCONFIRMED
+
+next AI, please review the file and continue this same protocol
+waiting for review by other
