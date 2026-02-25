@@ -4804,6 +4804,115 @@ function normalizeText(s) { return String(s || "").toLowerCase().trim(); }
                 });
         }
 
+        function doLock() {
+            const c = state.current;
+            if (!c || !c.loadout || c.spinning) return;
+
+            c.locked = true;
+            renderSpin();
+        }
+
+        function doRollPlanet() {
+            const c = state.current;
+            if (!c || !c.locked || !c.loadout || c.spinning) return;
+
+            const p = rollPlanetForFaction(c.faction);
+            if (!p) {
+                alert(`No enabled planets found for faction: ${c.faction || "Unknown"}. Check ITEMS > Planets.`);
+                return;
+            }
+
+            c.planet = p;
+            c.planetBiome = getPlanetBiomeFromPlanet(p);
+            c.planetLocked = true;
+
+            renderSpin();
+        }
+
+        function doClearPlanet() {
+            const c = state.current;
+            if (!c || !c.locked || !c.loadout || c.spinning) return;
+
+            const p = rollPlanetForFaction(c.faction);
+            if (!p) {
+                alert(`No enabled planets found for faction: ${c.faction || "Unknown"}. Check ITEMS > Planets.`);
+                return;
+            }
+
+            c.planet = p;
+            c.planetBiome = getPlanetBiomeFromPlanet(p);
+            c.planetLocked = true;
+
+            renderSpin();
+        }
+
+        function doReroll() {
+            const c = state.current;
+            if (!c || !c.specialActive || c.rerollsLeft <= 0) return;
+
+            c.rerollsLeft = Math.max(0, Number(c.rerollsLeft || 0) - 1);
+            if (c.rerollsLeft <= 0) c.specialActive = false;
+
+            doSpin(true);
+        }
+
+        function doUseThisRun() {
+            const c = state.current;
+            if (!c || !c.loadout || !c.locked || c.spinning) return;
+
+            const card = {
+                id: uid(),
+                createdAt: nowISO(),
+                seed: c.seed,
+                mode: c.mode,
+                faction: c.faction,
+                primary: c.loadout.primary,
+                sidearm: c.loadout.sidearm,
+                throwable: c.loadout.throwable,
+                stratagems: Array.isArray(c.loadout.stratagems) ? c.loadout.stratagems.slice() : [],
+                fingerprint: c.loadout.fingerprint || fingerprintLoadout(c.loadout),
+                planet: c.planet ? deepClone(c.planet) : null,
+                planetBiome: c.planetBiome || (c.planet ? getPlanetBiomeFromPlanet(c.planet) : null),
+                majorOrderDone: true,
+                notes: "",
+                stats: {
+                    kills: 0,
+                    accuracy: 0,
+                    deaths: 0,
+                    stims: 0,
+                    distanceKm: 0,
+                    stratUses: 0
+                },
+                scoreRaw: 0,
+                grade: 0
+            };
+
+            state.cards.push(card);
+            recalcGrades();
+            saveState();
+
+            state.current = {
+                seed: null,
+                seedBase: null,
+                mode: null,
+                faction: null,
+                loadout: null,
+                locked: false,
+                planet: null,
+                planetBiome: null,
+                planetLocked: false,
+                specialActive: false,
+                rerollsLeft: 0,
+                spinning: false,
+                _spinStartTs: 0
+            };
+
+            renderSpin();
+            renderResults();
+            renderRank();
+            refreshCompareOptions();
+        }
+
 
         function exportJSON() {
             const payload = JSON.stringify({ items: state.items, cards: state.cards }, null, 2);
